@@ -1,2 +1,4 @@
 ﻿  KMeansCluster.cpp
+C:\Users\bcbab\source\repos\KMeansCluster\KMeansCluster\KMeansCluster\KMeansCluster.cpp(89,23): warning C4018: '<': signed/unsigned mismatch
+C:\Users\bcbab\source\repos\KMeansCluster\KMeansCluster\KMeansCluster\KMeansCluster.cpp(90,27): warning C4018: '<': signed/unsigned mismatch
   KMeansCluster.vcxproj -> C:\Users\bcbab\source\repos\KMeansCluster\KMeansCluster\Debug\KMeansCluster.exe
