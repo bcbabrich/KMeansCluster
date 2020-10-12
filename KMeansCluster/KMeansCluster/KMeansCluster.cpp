@@ -1,23 +1,24 @@
-// KMeansCluster.cpp : This file contains the 'main' function. Program execution begins and ends there.
+// KMeansCluster.cpp : B Chase Babrich 2020, personal project
+
+#include "vector" // gives us vectors
+#include <string> // gives us getline method
+#include <iostream> // gives us cout, cin
+#include <fstream> // gives us file readin (fstream, ofstream)
+#include <sstream> // gives us ss(line), i.e., turns strings into streams :)
+#include <math.h> // gives us sqrt
+using namespace std; // don't have to write std:: everywhere
+
+
+// D processing. Turns data file (csv) into datastructure (2-D vector of doubles).
 //
-
-#include <string>
-#include <iostream>
-#include <fstream>
-#include "vector"
-#include <sstream>
-using namespace std;
-
-
-// IN: name of a csv file with data in the following format:
-// X,Y,L
-// where X,Y are ints >=0 and L is in [A-Z]
+// IN: name of a csv file with D in the following format:
+//          a,b,...,n,L where a,b,...,n are ints >=0 and L is in [A-Z]
 //
-// OUT: a 2-d vector of ints representing the data in the csv file
-vector<vector<int>> get_data(string filename)
+// OUT: a 2-d vector of ints representing the D in the csv file
+vector<vector<double>> get_D(string filename)
 {
     // initialize variables
-    vector<vector<int>> data;
+    vector<vector<double>> D;
     string line;
     ifstream myfile(filename);
 
@@ -25,83 +26,166 @@ vector<vector<int>> get_data(string filename)
     {
         while (getline(myfile, line))
         {
-            vector<int> row;
+            vector<double> row;
 
             // Create a stringstream of the current line
+            // i.e., we'll parse a line on a per character basis
             std::stringstream ss(line);
 
-            // Keep track of the current column index
-            int colIdx = 0;
-
-            // Extract each integer
+            // Extract each comma separated value (string) as a double
             char c;
-            int cur_val;
-            int prev_val = 0;
-            int tot_val = 0;
-            int dec = 1;
+            string numstr = "";
             while (ss >> c) {
                 // read in chars as ints
-                cur_val = c - 48;
+                numstr += c;
 
-                // If the next token is a comma, ignore it and move on
+                // push double onto row
                 if (ss.peek() == ',') {
+                    row.push_back(stod(numstr));
+                    numstr = "";
                     ss.ignore();
-
-                    // place int val in current row
-                    tot_val += prev_val*dec + cur_val;
-                    row.push_back(tot_val);
-                    tot_val = 0;
-                    prev_val = 0;
-                    dec = 1;
-                }
-                else {
-                    // otherwise, multiple the previous val by current decimal place and add it to total
-                    tot_val += prev_val * dec + cur_val;
-                    prev_val = cur_val;
-                    dec *= 10;
                 }
 
             }
             
-            // push row into data vector
-            row.push_back(tot_val);
-            data.push_back(row);
+            // lines are not terminated by commas
+            // therefore we missed pushing this numstr onto row
+            row.push_back(stod(numstr));
+            
+            // push row into D vector
+            D.push_back(row);
         }
         myfile.close();
     }
 
     else cout << "Unable to open file";
 
-    return data;
+    return D;
 
+}
+
+// Euclidean distance computing for two arbitrarily long vectors of doubles. 
+//
+// IN: Two vectors **of equal length!** containing doubles x, y
+//
+// OUT: A double corresponding to the distance between x and y 
+double distance(vector<double> &x, vector<double> &y) {
+    double sum = 0;
+    for (int i = 0; i < x.size(); i++) { sum += pow(y[i] - x[i], 2); }
+    return sqrt(sum);
+}
+
+// Returns the closest center to a single datapoint
+// I.e., calcates distance(dp, c) for each c in C,
+// and returns the index of the c with the smallest distance
+//
+// IN: A vector of doubles "D points" and a vector of double vectors "centers"
+//
+// OUT: A single integers corresponding to an index in C
+int assign_center(vector<double> &dp, vector< vector<double>> &C) {
+    int I;
+    double min_dist;
+    for (int i = 0; i < C.size(); i++) {
+        double dist = distance(dp, C[i]);
+        if ( i == 0 || dist < min_dist ) { min_dist = dist; I = i; }
+    }
+    return I;
+}
+
+// Returns the centroid of a set of datapoints
+// Does this by adding together all the datapoints and dividing by the numer of datapoints
+//
+// IN: A vector of double vectors "datapoints"
+//
+// OUT: A single double vector "centroid"
+vector<double> compute_centroid(vector< vector<double>> &dps) {
+    vector<double> sum = dps[0];
+    for (int i = 1; i < dps.size(); i++) {
+        for (int j = 0; j < dps[i].size(); j++) {
+            sum[j] += dps[i][j];
+        }
+    }
+    for (int j = 0; j < sum.size(); j++) { sum[j] /= dps.size(); }
+    return sum;
+}
+
+// Convert a vector of doubles to a string. Debugging/Testing helper function.
+// Use the actual debugger for anything in-depth!
+//
+// IN: A vector of doubles
+//
+// OUT: A string of all those doubles joined with ', '
+string print_dp(vector<double> dp) {
+    string str = "";
+    for (int i = 0; i < dp.size(); i++) { str += to_string(dp[i]) + ", "; }
+    return str;
+}
+
+// Convert a group of double vectors to a string. Debugging/Testing helper function.
+// Use the actual debugger for anything in-depth!
+//
+// IN: A vector of double vectors
+//
+// OUT: A string of print_dp()'d vectors joined with '\n'
+string print_grp(vector<vector<double>>& grp) {
+    string str = "";
+    for (int i = 0; i < grp.size(); i++) { str += print_dp(grp[i]) + "\n"; }
+    return str;
 }
 
 int main()
 {
-    cout << "Hello! I want to be a K-Means Clustering Algorithm When I Grow Up!\n";
+    // -------------- Setting data up --------------
 
+    // point string to file name
     string filename = "data/1.csv";
 
-    vector<vector<int>> data = get_data(filename);
+    // convert file data to local data structure "D"
+    vector<vector<double>> D = get_D(filename);
 
-    cout << "Here is the data from " << filename << "\n";
+    cout << "data:\n" << print_grp(D) << "\n\n";
 
-    for (int i = 0; i < data.size(); i++) {
-        for (int j = 0; j < data[0].size(); j++) {
-            cout << data[i][j] << ",";
-        }
-        cout << "\n";
+
+    // -------------- Setting centers up --------------
+
+    // Generate k centers, "C"
+    //vector<vector<double>> C = { {5,6}, {20,52}, {43,25} };
+    vector<vector<double>> C = { {23,23}, {24,24}, {25,25} };
+
+    cout << "centers:\n" << print_grp(C) << "\n\n";
+
+    // Allocate space for our datapoint centers, "dp_C" so we can immediately index into it
+    // We need both C and dp_C because we reassign one using the other
+    vector< vector<double>> dp_C;
+    for (int i = 0; i < D.size(); i++) { dp_C.push_back({ 0.0 }); }
+
+
+    // -------------- Begin looped part --------------
+
+    // assign a center to each datapoint
+    for (int i = 0; i < D.size(); i++) {
+        dp_C[i] = C[assign_center(D[i], C)];
     }
 
+    // partition datapoints based on their assigned centers
+    // i.e., define new clusters based on current centers
+    vector<vector<vector<double>>> dp_P;
+    for (int c = 0; c < C.size(); c++) {
+        vector<vector<double>> interim;
+        for (int d = 0; d < D.size(); d++) {
+            if (dp_C[d] == C[c]) { interim.push_back(D[d]); }
+        }
+        // !!! BUG: It is possible for interim to be empty here.
+        //          This causes an OOB error when we try to index into it in compute_centroid.
+        dp_P.push_back(interim);
+    }
+
+    // recompute centers based on datapoint partitions
+    // i.e., define new centers based on current clusters
+    for (int p = 0; p < dp_P.size(); p++) {
+        C[p] = compute_centroid(dp_P[p]);
+    }
+
+    cout << "new centers:\n" << print_grp(C);
+
 }
-
-// Run program: Ctrl + F5 or Debug > Start Without Debugging menu
-// Debug program: F5 or Debug > Start Debugging menu
-
-// Tips for Getting Started: 
-//   1. Use the Solution Explorer window to add/manage files
-//   2. Use the Team Explorer window to connect to source control
-//   3. Use the Output window to see build output and other messages
-//   4. Use the Error List window to view errors
-//   5. Go to Project > Add New Item to create new code files, or Project > Add Existing Item to add existing code files to the project
-//   6. In the future, to open this project again, go to File > Open > Project and select the .sln file
