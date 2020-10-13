@@ -1,11 +1,13 @@
 // KMeansCluster.cpp : B Chase Babrich 2020, personal project
 
-#include "vector" // gives us vectors
-#include <string> // gives us getline method
-#include <iostream> // gives us cout, cin
-#include <fstream> // gives us file readin (fstream, ofstream)
-#include <sstream> // gives us ss(line), i.e., turns strings into streams :)
-#include <math.h> // gives us sqrt
+#include "vector"    // gives us vectors
+#include <string>    // gives us getline method
+#include <iostream>  // gives us cout, cin
+#include <fstream>   // gives us file readin (fstream, ofstream)
+#include <sstream>   // gives us ss(line), i.e., turns strings into streams :)
+#include <math.h>    // gives us sqrt
+#include <stdlib.h>  // gives us srand, rand (random numbers for guesing centers)
+#include <time.h>    // use in conjunctio with rand
 using namespace std; // don't have to write std:: everywhere
 
 
@@ -133,6 +135,131 @@ string print_grp(vector<vector<double>>& grp) {
     return str;
 }
 
+// Generate starting centers for K-Means Clustering
+//      - Method 1: Generate k random numbers in range of each dimension in the datapoint space
+//      - Method 2: Use average of datapoints to make educated guesses..?
+//
+// IN: A 2D vector of doubles: the data
+//
+// OUT: A 2D vector of doubles: centers
+//      - k vectors of size equal to the num of dims in datapoint space
+vector< vector<double>> generate_centers(vector< vector<double>> &D, int K) {
+
+    // -------------- Get range for each dimension in the datapoint space --------------
+
+    // datapoints are vectors in R^n
+    // i.e., D = { [a_1, a_2, ..., a_i, ..., a_n], [b_1, b_2, ..., b_i, ..., b_n], ...} 
+    // find the max and the min for each dimension i
+    vector <double> maxes;
+    vector <double> mins;
+    for (int d = 0; d < D.size(); d++) {        // iterate over datapoints
+        for (int i = 0; i < D[d].size(); i++) { // iterate over elements
+
+            // populate maxes, mins with first datapoint's vals
+            if (d == 0) { maxes.push_back(D[d][i]); mins.push_back(D[d][i]); }
+
+            // otherwise, check if new maxes or mins are found
+            else {
+                if (maxes[i] < D[d][i]) { maxes[i] = D[d][i]; }
+                if (mins[i] > D[d][i]) { mins[i] = D[d][i]; }
+            }
+        }
+    }
+
+    // -------------- Generate and return k random centers in ranges found --------------
+
+    vector< vector<double>> C;
+    for (int k = 0; k < K; k++) {
+        vector<double> c;
+        for (int i = 0; i < D[0].size(); i++) {
+            srand(time(NULL) + k + i); // re-initialize random seed
+            c.push_back(double(rand() % int(maxes[i]) + int(mins[i])));
+        }
+        C.push_back(c);
+    }
+
+    return C;
+}
+
+// Generate labels for data via K-Means Clustering
+//
+// IN: A 2D vector of doubles: the data D
+//
+// OUT: A vector of ints: the labels for each datapoint in D
+//      - same length as first dimension of D
+vector<int> KMeansCluster(vector< vector<double>>& D) {
+
+    // -------------- Setting centers up --------------
+
+    // Generate K centers, "C"
+    int K = 3;
+    vector<vector<double>> C = generate_centers(D,K);
+
+    cout << "centers:\n" << print_grp(C) << "\n";
+
+    // Allocate space for our datapoint centers, "dp_C" so we can immediately index into it
+    // We need both C and dp_C because we reassign one using the other
+    vector< vector<double>> dp_C;
+    for (int i = 0; i < D.size(); i++) { dp_C.push_back({ 0.0 }); }
+
+
+    // -------------- Cluster until convergence --------------
+
+    // indexes of convergence
+    int eps = 1; // distance
+    int N = 3; // consecutive count
+    int v = 0; // current count
+
+    while (v < N) {
+        // assign a center to each datapoint
+        for (int i = 0; i < D.size(); i++) {
+            dp_C[i] = C[assign_center(D[i], C)];
+        }
+
+        // partition datapoints based on their assigned centers
+        // i.e., define new clusters based on current centers
+        vector<vector<vector<double>>> dp_P;
+        for (int c = 0; c < C.size(); c++) {
+            vector<vector<double>> interim;
+            for (int d = 0; d < D.size(); d++) {
+                if (dp_C[d] == C[c]) { interim.push_back(D[d]); }
+            }
+            dp_P.push_back(interim);
+        }
+
+        // recompute centers based on datapoint partitions
+        // i.e., define new centers based on current clusters
+        vector<vector<double>> C_prev(C.begin(), C.end()); // save before changing for convergence calculation
+        for (int p = 0; p < dp_P.size(); p++) {
+            // it is possible for a partition to be empty
+            // this happens when there are no datapoints for which that partition's center is the closest
+            if (!dp_P[p].empty()) { C[p] = compute_centroid(dp_P[p]); }
+        }
+        cout << "new centers:\n" << print_grp(C) << "\n";
+
+        // check for convergence of centers:
+        // if all centers do not change more than epsilon for N iterations in a row, they have converged.
+        bool pass = true;
+        for (int c = 0; c < C.size(); c++) {
+            if (eps < distance(C[c], C_prev[c])) { pass = false; break; }
+        }
+        if (pass) { v++; }
+
+    }
+
+    cout << "converged\n";
+
+    // -------------- Gather and return labels --------------
+
+    // the label for a datapoint is the index of its assigned center in C
+    vector<int> lbls;
+    for (int d = 0; d < D.size(); d++) {
+        lbls.push_back(find(C.begin(), C.end(), dp_C[d]) - C.begin());
+    }
+
+    return lbls;
+}
+
 int main()
 {
     // -------------- Setting data up --------------
@@ -143,49 +270,16 @@ int main()
     // convert file data to local data structure "D"
     vector<vector<double>> D = get_D(filename);
 
-    cout << "data:\n" << print_grp(D) << "\n\n";
+    cout << "data:\n" << print_grp(D) << "\n";
 
 
-    // -------------- Setting centers up --------------
+    // -------------- Get and display labels for data using K-Means Clustering --------------
 
-    // Generate k centers, "C"
-    //vector<vector<double>> C = { {5,6}, {20,52}, {43,25} };
-    vector<vector<double>> C = { {23,23}, {24,24}, {25,25} };
+    // Get
+    vector<int> lbls = KMeansCluster(D);
 
-    cout << "centers:\n" << print_grp(C) << "\n\n";
-
-    // Allocate space for our datapoint centers, "dp_C" so we can immediately index into it
-    // We need both C and dp_C because we reassign one using the other
-    vector< vector<double>> dp_C;
-    for (int i = 0; i < D.size(); i++) { dp_C.push_back({ 0.0 }); }
-
-
-    // -------------- Begin looped part --------------
-
-    // assign a center to each datapoint
-    for (int i = 0; i < D.size(); i++) {
-        dp_C[i] = C[assign_center(D[i], C)];
-    }
-
-    // partition datapoints based on their assigned centers
-    // i.e., define new clusters based on current centers
-    vector<vector<vector<double>>> dp_P;
-    for (int c = 0; c < C.size(); c++) {
-        vector<vector<double>> interim;
-        for (int d = 0; d < D.size(); d++) {
-            if (dp_C[d] == C[c]) { interim.push_back(D[d]); }
-        }
-        // !!! BUG: It is possible for interim to be empty here.
-        //          This causes an OOB error when we try to index into it in compute_centroid.
-        dp_P.push_back(interim);
-    }
-
-    // recompute centers based on datapoint partitions
-    // i.e., define new centers based on current clusters
-    for (int p = 0; p < dp_P.size(); p++) {
-        C[p] = compute_centroid(dp_P[p]);
-    }
-
-    cout << "new centers:\n" << print_grp(C);
+    // Display
+    cout << "\npredictions:\n";
+    for (int d = 0; d < D.size(); d++) { cout << print_dp(D[d]) << ": " << lbls[d] << "\n"; }
 
 }

@@ -1,14 +1,21 @@
 ﻿  KMeansCluster.cpp
-C:\Users\bcbab\source\repos\KMeansCluster\KMeansCluster\KMeansCluster\KMeansCluster.cpp(74,23): warning C4018: '<': signed/unsigned mismatch
-C:\Users\bcbab\source\repos\KMeansCluster\KMeansCluster\KMeansCluster\KMeansCluster.cpp(88,23): warning C4018: '<': signed/unsigned mismatch
-C:\Users\bcbab\source\repos\KMeansCluster\KMeansCluster\KMeansCluster\KMeansCluster.cpp(103,23): warning C4018: '<': signed/unsigned mismatch
-C:\Users\bcbab\source\repos\KMeansCluster\KMeansCluster\KMeansCluster\KMeansCluster.cpp(104,27): warning C4018: '<': signed/unsigned mismatch
-C:\Users\bcbab\source\repos\KMeansCluster\KMeansCluster\KMeansCluster\KMeansCluster.cpp(108,23): warning C4018: '<': signed/unsigned mismatch
-C:\Users\bcbab\source\repos\KMeansCluster\KMeansCluster\KMeansCluster\KMeansCluster.cpp(120,23): warning C4018: '<': signed/unsigned mismatch
-C:\Users\bcbab\source\repos\KMeansCluster\KMeansCluster\KMeansCluster\KMeansCluster.cpp(132,23): warning C4018: '<': signed/unsigned mismatch
-C:\Users\bcbab\source\repos\KMeansCluster\KMeansCluster\KMeansCluster\KMeansCluster.cpp(160,23): warning C4018: '<': signed/unsigned mismatch
-C:\Users\bcbab\source\repos\KMeansCluster\KMeansCluster\KMeansCluster\KMeansCluster.cpp(166,23): warning C4018: '<': signed/unsigned mismatch
-C:\Users\bcbab\source\repos\KMeansCluster\KMeansCluster\KMeansCluster\KMeansCluster.cpp(173,23): warning C4018: '<': signed/unsigned mismatch
-C:\Users\bcbab\source\repos\KMeansCluster\KMeansCluster\KMeansCluster\KMeansCluster.cpp(175,27): warning C4018: '<': signed/unsigned mismatch
-C:\Users\bcbab\source\repos\KMeansCluster\KMeansCluster\KMeansCluster\KMeansCluster.cpp(183,23): warning C4018: '<': signed/unsigned mismatch
+C:\Users\bcbab\source\repos\KMeansCluster\KMeansCluster\KMeansCluster\KMeansCluster.cpp(76,23): warning C4018: '<': signed/unsigned mismatch
+C:\Users\bcbab\source\repos\KMeansCluster\KMeansCluster\KMeansCluster\KMeansCluster.cpp(90,23): warning C4018: '<': signed/unsigned mismatch
+C:\Users\bcbab\source\repos\KMeansCluster\KMeansCluster\KMeansCluster\KMeansCluster.cpp(105,23): warning C4018: '<': signed/unsigned mismatch
+C:\Users\bcbab\source\repos\KMeansCluster\KMeansCluster\KMeansCluster\KMeansCluster.cpp(106,27): warning C4018: '<': signed/unsigned mismatch
+C:\Users\bcbab\source\repos\KMeansCluster\KMeansCluster\KMeansCluster\KMeansCluster.cpp(110,23): warning C4018: '<': signed/unsigned mismatch
+C:\Users\bcbab\source\repos\KMeansCluster\KMeansCluster\KMeansCluster\KMeansCluster.cpp(122,23): warning C4018: '<': signed/unsigned mismatch
+C:\Users\bcbab\source\repos\KMeansCluster\KMeansCluster\KMeansCluster\KMeansCluster.cpp(134,23): warning C4018: '<': signed/unsigned mismatch
+C:\Users\bcbab\source\repos\KMeansCluster\KMeansCluster\KMeansCluster\KMeansCluster.cpp(155,23): warning C4018: '<': signed/unsigned mismatch
+C:\Users\bcbab\source\repos\KMeansCluster\KMeansCluster\KMeansCluster\KMeansCluster.cpp(156,27): warning C4018: '<': signed/unsigned mismatch
+C:\Users\bcbab\source\repos\KMeansCluster\KMeansCluster\KMeansCluster\KMeansCluster.cpp(174,27): warning C4018: '<': signed/unsigned mismatch
+C:\Users\bcbab\source\repos\KMeansCluster\KMeansCluster\KMeansCluster\KMeansCluster.cpp(175,34): warning C4244: 'argument': conversion from 'time_t' to 'unsigned int', possible loss of data
+C:\Users\bcbab\source\repos\KMeansCluster\KMeansCluster\KMeansCluster\KMeansCluster.cpp(203,23): warning C4018: '<': signed/unsigned mismatch
+C:\Users\bcbab\source\repos\KMeansCluster\KMeansCluster\KMeansCluster\KMeansCluster.cpp(215,27): warning C4018: '<': signed/unsigned mismatch
+C:\Users\bcbab\source\repos\KMeansCluster\KMeansCluster\KMeansCluster\KMeansCluster.cpp(222,27): warning C4018: '<': signed/unsigned mismatch
+C:\Users\bcbab\source\repos\KMeansCluster\KMeansCluster\KMeansCluster\KMeansCluster.cpp(224,31): warning C4018: '<': signed/unsigned mismatch
+C:\Users\bcbab\source\repos\KMeansCluster\KMeansCluster\KMeansCluster\KMeansCluster.cpp(233,27): warning C4018: '<': signed/unsigned mismatch
+C:\Users\bcbab\source\repos\KMeansCluster\KMeansCluster\KMeansCluster\KMeansCluster.cpp(243,27): warning C4018: '<': signed/unsigned mismatch
+C:\Users\bcbab\source\repos\KMeansCluster\KMeansCluster\KMeansCluster\KMeansCluster.cpp(256,23): warning C4018: '<': signed/unsigned mismatch
+C:\Users\bcbab\source\repos\KMeansCluster\KMeansCluster\KMeansCluster\KMeansCluster.cpp(283,23): warning C4018: '<': signed/unsigned mismatch
   KMeansCluster.vcxproj -> C:\Users\bcbab\Source\Repos\KMeansCluster\KMeansCluster\Debug\KMeansCluster.exe
