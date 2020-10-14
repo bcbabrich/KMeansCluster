@@ -1,0 +1,1 @@
+C:\Users\bcbab\source\repos\KMeansCluster\KMeansCluster\KMeansCluster\Debug\KMeansCluster.vcxproj.CopyComplete

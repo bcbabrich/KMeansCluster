@@ -10,8 +10,16 @@
 #include <time.h>    // use in conjunctio with rand
 using namespace std; // don't have to write std:: everywhere
 
+// PLot libs
+// https://stackoverflow.com/questions/44448010/how-to-draw-a-plot-chart-using-visual-studio-c
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
+#include <cmath>
+#include "plplot\plstream.h"
+const int NSIZE = 51;
 
-// D processing. Turns data file (csv) into datastructure (2-D vector of doubles).
+// Data processing. Turns data file (csv) into datastructure (2-D vector of doubles).
 //
 // IN: name of a csv file with D in the following format:
 //          a,b,...,n,L where a,b,...,n are ints >=0 and L is in [A-Z]
@@ -181,6 +189,53 @@ vector< vector<double>> generate_centers(vector< vector<double>> &D, int K) {
     return C;
 }
 
+// use PLPlot to plot data and centers
+//
+// IN: A 2d vector of doubles (data), a 2d vector of doubles (centers)
+//
+// OUT: Currently, none. A window the the plot will pop up. In the future, it should be saved as an image.
+//
+// NOTE: only works when datapoints are 2D
+//
+// REFERENCE: http://plplot.sourceforge.net/examples.php?demo=00
+void plot(vector< vector<double>>& D, vector<vector<double>>& C, string ind) {
+    // axis params
+    PLFLT x_d[NSIZE], y_d[NSIZE];
+    PLFLT x_c[NSIZE], y_c[NSIZE];
+    PLFLT xmin = 0., xmax = 60., ymin = 0., ymax = 60.;
+
+    // populate data PLFLT arrays
+    for (int i = 0; i < D.size(); i++) {
+        x_d[i] = D[i][0]; // x-coords
+        y_d[i] = D[i][1]; // y-coords
+    }
+
+    // populate center PLFLT arrays
+    for (int i = 0; i < C.size(); i++) {
+        x_c[i] = C[i][0]; // x-coords
+        y_c[i] = C[i][1]; // y-coords
+    }
+
+    // plplot object
+    auto pls = new plstream();
+    pls->sdev("svg");
+    string filename = "C:/Users/bcbab/source/repos/KMeansCluster/KMeansCluster/KMeansCluster/Data/" + ind + ".svg";
+    pls->sfnam(filename.c_str());
+    pls->init();
+    pls->env(xmin, xmax, ymin, ymax, 0, 0);
+    string title = "Data with Centers. 'o'=data, 'c'=centers, " + ind;
+    pls->lab("x", "y", title.c_str());
+
+    //https://linux.die.net/man/3/plpoin
+    pls->poin(D.size(), x_d, y_d, 111); // plot data with ascii char 'o' (dec 111)
+    pls->poin(D.size(), x_c, y_c, 99); // plot centers with ascii char 'c' (dec 99)
+
+    // writes output to disk?
+    pls->eop();
+
+    delete pls;
+}
+
 // Generate labels for data via K-Means Clustering
 //
 // IN: A 2D vector of doubles: the data D
@@ -197,6 +252,9 @@ vector<int> KMeansCluster(vector< vector<double>>& D) {
 
     cout << "centers:\n" << print_grp(C) << "\n";
 
+    // plot initial state of data and centers
+    plot(D, C, "initial_state");
+
     // Allocate space for our datapoint centers, "dp_C" so we can immediately index into it
     // We need both C and dp_C because we reassign one using the other
     vector< vector<double>> dp_C;
@@ -209,8 +267,12 @@ vector<int> KMeansCluster(vector< vector<double>>& D) {
     int eps = 1; // distance
     int N = 3; // consecutive count
     int v = 0; // current count
+    int it = 0;
 
     while (v < N) {
+        // increment iteration counter
+        it++;
+
         // assign a center to each datapoint
         for (int i = 0; i < D.size(); i++) {
             dp_C[i] = C[assign_center(D[i], C)];
@@ -245,9 +307,16 @@ vector<int> KMeansCluster(vector< vector<double>>& D) {
         }
         if (pass) { v++; }
 
+        // plot data and centers
+        plot(D, C, "iteration_" + to_string(it));
+
     }
 
     cout << "converged\n";
+
+    // plot data and centers one last time
+    plot(D, C, "converged_state");
+
 
     // -------------- Gather and return labels --------------
 

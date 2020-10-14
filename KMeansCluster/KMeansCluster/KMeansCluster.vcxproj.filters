@@ -21,5 +21,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Data\1.csv" />
+    <None Include="packages.config" />
   </ItemGroup>
 </Project>
