@@ -7,10 +7,10 @@
 #include <sstream>   // gives us ss(line), i.e., turns strings into streams :)
 #include <math.h>    // gives us sqrt
 #include <stdlib.h>  // gives us srand, rand (random numbers for guesing centers)
-#include <time.h>    // use in conjunctio with rand
+#include <time.h>    // use in conjunction with rand
 using namespace std; // don't have to write std:: everywhere
 
-// PLot libs
+// PLPot libs
 // https://stackoverflow.com/questions/44448010/how-to-draw-a-plot-chart-using-visual-studio-c
 #include <cstdio>
 #include <cstdlib>
@@ -18,6 +18,12 @@ using namespace std; // don't have to write std:: everywhere
 #include <cmath>
 #include "plplot\plstream.h"
 const int NSIZE = 51;
+
+// curl
+// https://stackoverflow.com/questions/53861300/how-do-you-properly-install-libcurl-for-use-in-visual-studio-2017
+#define CURL_STATICLIB
+#include <curl\curl.h>
+
 
 // Data processing. Turns data file (csv) into datastructure (2-D vector of doubles).
 //
@@ -143,15 +149,66 @@ string print_grp(vector<vector<double>>& grp) {
     return str;
 }
 
+
+// Curl random.org for a random integer. Used for better random initialization of centers.
+//
+// IN: ints min, max: maximum, minimum value integers can have
+//
+// OUT: a single int in range given
+//
+// SOURCES:
+//      - https://stackoverflow.com/questions/11471690/curl-h-no-such-file-or-directory
+//      - https://gist.github.com/whoshuu/2dc858b8730079602044
+size_t writeFunction(void* ptr, size_t size, size_t nmemb, std::string* data) {
+    data->append((char*)ptr, size * nmemb);
+    return size * nmemb;
+}
+int get_rorgint(int min, int max) {
+
+    CURL* curl;
+    CURLcode res;
+
+    curl = curl_easy_init();
+    string response_string;
+    if (curl) {
+        string curl_url = "https://www.random.org/integers/?num=1&min=" + to_string(min) 
+                                                                        + "&max=" + to_string(max) 
+                                                                        + "&col=1&base=10&format=plain&rnd=new";
+        curl_easy_setopt(curl, CURLOPT_URL, curl_url.c_str());
+
+        curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, writeFunction);
+        curl_easy_setopt(curl, CURLOPT_WRITEDATA, &response_string);
+
+        /* Perform the request, res will get the return code */
+        res = curl_easy_perform(curl);
+        /* Check for errors */
+        if (res != CURLE_OK)
+            fprintf(stderr, "curl_easy_perform() failed: %s\n",
+                curl_easy_strerror(res));
+
+        /* always cleanup */
+        curl_easy_cleanup(curl);
+    }
+
+
+    return stoi(response_string.substr(0, response_string.length() - 1));
+}
+
 // Generate starting centers for K-Means Clustering
 //      - Method 1: Generate k random numbers in range of each dimension in the datapoint space
+//              - 1.1: Ensure that random numbers are at least M (margin) distance apart from each other
+//                     where M = range(D) / p for some integer p (proportion)
 //      - Method 2: Use average of datapoints to make educated guesses..?
 //
 // IN: A 2D vector of doubles: the data
 //
 // OUT: A 2D vector of doubles: centers
 //      - k vectors of size equal to the num of dims in datapoint space
-vector< vector<double>> generate_centers(vector< vector<double>> &D, int K) {
+vector< vector<double>> generate_centers(vector< vector<double>> &D, int K, double method = 1) {
+    cout << "generating centers...\n";
+
+    // use random.org or not (TODO: should be a function parameter)
+    bool randorg = true;
 
     // -------------- Get range for each dimension in the datapoint space --------------
 
@@ -174,16 +231,48 @@ vector< vector<double>> generate_centers(vector< vector<double>> &D, int K) {
         }
     }
 
-    // -------------- Generate and return k random centers in ranges found --------------
+    // 1.1 parameters M and p
+    int p = 3;
+    double M = distance(maxes, mins) / (double)p;
 
+    // -------------- Generate and return k random centers in ranges found --------------
+    bool spaced = false;
     vector< vector<double>> C;
-    for (int k = 0; k < K; k++) {
-        vector<double> c;
-        for (int i = 0; i < D[0].size(); i++) {
-            srand(time(NULL) + k + i); // re-initialize random seed
-            c.push_back(double(rand() % int(maxes[i]) + int(mins[i])));
+    while (!spaced) {
+
+        // generate centers
+        C = {}; // re-empty C
+        for (int k = 0; k < K; k++) {
+            vector<double> c;
+            for (int i = 0; i < D[0].size(); i++) {
+
+                double rnd;
+                if (randorg) {
+                    rnd = double(get_rorgint(mins[i], maxes[i]));
+                }
+                else {
+                    srand(time(NULL)); // re-initialize random seed
+                    rnd = double(rand() % int(maxes[i]) + int(mins[i]));
+                }
+
+                c.push_back(rnd);
+            }
+            C.push_back(c);
         }
-        C.push_back(c);
+
+        // check if any two centers are closer than M
+        if (method == 1.1) {
+            spaced = true;
+            for (int c = 0; c < C.size(); c++) {
+                for (int c_i = c + 1; c_i < C.size(); c_i++) {
+                    // if any are, break out of BOTH for loops
+                    if (distance(C[c], C[c_i]) < M) { spaced = false; c = C.size(); break; }
+                }
+            }
+        // if method isn't 1.1, we don't care about spacing
+        } else {
+            spaced = true; 
+        }
     }
 
     return C;
@@ -248,7 +337,7 @@ vector<int> KMeansCluster(vector< vector<double>>& D) {
 
     // Generate K centers, "C"
     int K = 3;
-    vector<vector<double>> C = generate_centers(D,K);
+    vector<vector<double>> C = generate_centers(D,K,1.1);
 
     cout << "centers:\n" << print_grp(C) << "\n";
 
@@ -350,5 +439,7 @@ int main()
     // Display
     cout << "\npredictions:\n";
     for (int d = 0; d < D.size(); d++) { cout << print_dp(D[d]) << ": " << lbls[d] << "\n"; }
+
+    return 0;
 
 }
