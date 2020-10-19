@@ -736,7 +736,22 @@
         fill-opacity="1.000000"
         xml:space="preserve"
         font-size="16"
-        transform="matrix(1.000000 0.000000 0.000000 -1.000000 508.660543 449.398480)"
+        transform="matrix(1.000000 0.000000 0.000000 -1.000000 181.126133 145.793023)"
+        text-anchor="middle"
+        x="0.000000"
+        y="6.451584"
+><tspan font-family="sans-serif" font-style="normal" font-weight="normal">&#x63;</tspan></text>
+    </g>
+    <g
+      clip-path="url(#text-clipping1)"
+      >
+      <text
+        dominant-baseline="no-change"
+        fill="#FF0000"
+        fill-opacity="1.000000"
+        xml:space="preserve"
+        font-size="16"
+        transform="matrix(1.000000 0.000000 0.000000 -1.000000 524.129765 242.387768)"
         text-anchor="middle"
         x="0.000000"
         y="6.451584"
@@ -752,21 +767,6 @@
         xml:space="preserve"
         font-size="16"
         transform="matrix(1.000000 0.000000 0.000000 -1.000000 292.377087 440.191656)"
-        text-anchor="middle"
-        x="0.000000"
-        y="6.451584"
-><tspan font-family="sans-serif" font-style="normal" font-weight="normal">&#x63;</tspan></text>
-    </g>
-    <g
-      clip-path="url(#text-clipping1)"
-      >
-      <text
-        dominant-baseline="no-change"
-        fill="#FF0000"
-        fill-opacity="1.000000"
-        xml:space="preserve"
-        font-size="16"
-        transform="matrix(1.000000 0.000000 0.000000 -1.000000 352.627949 194.090396)"
         text-anchor="middle"
         x="0.000000"
         y="6.451584"

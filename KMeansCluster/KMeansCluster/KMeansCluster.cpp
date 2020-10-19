@@ -200,15 +200,16 @@ int get_rorgint(int min, int max) {
 //                     where M = range(D) / p for some integer p (proportion)
 //      - Method 2: Use average of datapoints to make educated guesses..?
 //
-// IN: A 2D vector of doubles: the data
+// IN: 
+//      - A 2D vector of doubles: the data
+//      - a double c_m (centers method): method used for centers initialization
+//      - a bool rorg (random.org): whether or not to curl random.org for initial center values
 //
 // OUT: A 2D vector of doubles: centers
 //      - k vectors of size equal to the num of dims in datapoint space
-vector< vector<double>> generate_centers(vector< vector<double>> &D, int K, double method = 1) {
-    cout << "generating centers...\n";
-
-    // use random.org or not (TODO: should be a function parameter)
-    bool randorg = true;
+vector< vector<double>> generate_centers(vector< vector<double>> &D, int K, double method = 1, bool rorg = true) {
+    // logging
+    cout << "generating centers"; if (rorg) { cout << " using random.org"; } cout << "...\n";
 
     // -------------- Get range for each dimension in the datapoint space --------------
 
@@ -240,23 +241,38 @@ vector< vector<double>> generate_centers(vector< vector<double>> &D, int K, doub
     vector< vector<double>> C;
     while (!spaced) {
 
-        // generate centers
         C = {}; // re-empty C
+        if (!rorg) { srand(time(NULL)); }// initialize random seed if using local random (KMC-16)
+
+        // generate centers
         for (int k = 0; k < K; k++) {
             vector<double> c;
             for (int i = 0; i < D[0].size(); i++) {
 
-                double rnd;
-                if (randorg) {
-                    rnd = double(get_rorgint(mins[i], maxes[i]));
+                double val;
+
+                if (method < 2) {
+                    // methods 1, 1.1
+                    // randomized distribution of centers
+
+                    // using random.org
+                    if (rorg) {
+                        val = double(get_rorgint(mins[i], maxes[i]));
+                    }
+                    // using local randomizer
+                    else {
+                        val = double(rand() % int(maxes[i]) + int(mins[i]));
+                    }
                 }
                 else {
-                    srand(time(NULL)); // re-initialize random seed
-                    rnd = double(rand() % int(maxes[i]) + int(mins[i]));
+                    // method 2
+                    // uniform distribution of centers
+                    val = (k+1)*(abs(maxes[i] - mins[i]) / K);
                 }
 
-                c.push_back(rnd);
+                c.push_back(val);
             }
+
             C.push_back(c);
         }
 
@@ -327,17 +343,20 @@ void plot(vector< vector<double>>& D, vector<vector<double>>& C, string ind) {
 
 // Generate labels for data via K-Means Clustering
 //
-// IN: A 2D vector of doubles: the data D
+// IN: 
+//      - A 2D vector of doubles: the data D
+//      - an int K: number of centers to initialize
+//      - a double c_m (centers method): method used for centers initialization
+//      - a bool rorg (random.org): whether or not to curl random.org for initial center values
 //
 // OUT: A vector of ints: the labels for each datapoint in D
 //      - same length as first dimension of D
-vector<int> KMeansCluster(vector< vector<double>>& D) {
+vector<int> KMeansCluster(vector< vector<double>>& D, int K = 3, int c_m = 1.1, bool rorg = true) {
 
     // -------------- Setting centers up --------------
 
     // Generate K centers, "C"
-    int K = 3;
-    vector<vector<double>> C = generate_centers(D,K,1.1);
+    vector<vector<double>> C = generate_centers(D,K,c_m,rorg);
 
     cout << "centers:\n" << print_grp(C) << "\n";
 
@@ -433,8 +452,13 @@ int main()
 
     // -------------- Get and display labels for data using K-Means Clustering --------------
 
-    // Get
-    vector<int> lbls = KMeansCluster(D);
+    // KMeans arguments: 
+    // (D, K, c_m, rorg)
+    // - D: data
+    // - K: # of centers to use
+    // - c_m: center initialization method (1 or 1.1)
+    // - rorg: center randomization using random.org (boolean)
+    vector<int> lbls = KMeansCluster(D, 3, 2, false);
 
     // Display
     cout << "\npredictions:\n";
